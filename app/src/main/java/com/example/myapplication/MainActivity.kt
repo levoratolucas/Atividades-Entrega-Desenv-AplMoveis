@@ -1,4 +1,5 @@
 package com.example.myapplication
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -44,9 +46,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CounterGame() {
     var count by rememberSaveable { mutableIntStateOf(0) }
-    val target = rememberSaveable { (20..40).random() }
+    val target = rememberSaveable { (1..50).random() }
     var hasGivenUp by rememberSaveable { mutableStateOf(false) }
     var gameEnded by rememberSaveable { mutableStateOf(false) }
+    var showCongratulations by rememberSaveable { mutableStateOf(false) }
+    var showGiveUpDialog by rememberSaveable { mutableStateOf(false) }
+
 
     val imageResource = when {
         hasGivenUp -> R.drawable.image5
@@ -57,13 +62,13 @@ fun CounterGame() {
     }
 
     Column(
-
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
 
         Image(
             painter = painterResource(id = imageResource),
@@ -73,12 +78,56 @@ fun CounterGame() {
                 .weight(1f)
         )
 
+        if (showCongratulations) {
+            AlertDialog(
+                onDismissRequest = { showCongratulations = false },
+                title = { Text(text = "Parabéns!") },
+                text = { Text(text = "Você atingiu a meta de $target cliques!") },
+                confirmButton = {
+                    Button(onClick = {
+                        count = 0
+                        hasGivenUp = false
+                        gameEnded = false
+                        showCongratulations = false
+                    }) {
+                        Text("Novo Jogo")
+                    }
+                }
+            )
+        }
+
+        if (showGiveUpDialog) {
+            AlertDialog(
+                onDismissRequest = { showGiveUpDialog = false },
+                title = { Text(text = "Você desistiu!") },
+                text = { Text(text = "Deseja iniciar um novo jogo?") },
+                confirmButton = {
+                    Button(onClick = {
+                        count = 0
+                        hasGivenUp = false
+                        gameEnded = false
+                        showGiveUpDialog = false
+                    }) {
+                        Text("Sim")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showGiveUpDialog = false }) {
+                        Text("Não")
+                    }
+                }
+            )
+        }
+
 
         if (!gameEnded) {
             Button(
                 onClick = {
                     count++
-                    if (count >= target) gameEnded = true
+                    if (count >= target) {
+                        gameEnded = true
+                        showCongratulations = true
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 shape = RoundedCornerShape(8.dp)
@@ -106,6 +155,7 @@ fun CounterGame() {
                     onClick = {
                         hasGivenUp = true
                         gameEnded = true
+                        showGiveUpDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     shape = RoundedCornerShape(8.dp)
