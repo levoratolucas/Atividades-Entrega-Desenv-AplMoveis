@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,16 +43,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun CounterGame() {
     var count by rememberSaveable { mutableIntStateOf(0) }
-    val target = rememberSaveable { (1..50).random() }
+    var target by rememberSaveable { mutableStateOf((1..50).random()) }
     var hasGivenUp by rememberSaveable { mutableStateOf(false) }
     var gameEnded by rememberSaveable { mutableStateOf(false) }
     var showCongratulations by rememberSaveable { mutableStateOf(false) }
     var showGiveUpDialog by rememberSaveable { mutableStateOf(false) }
 
+    fun resetGame() {
+        count = 0
+        hasGivenUp = false
+        gameEnded = false
+        showCongratulations = false
+        showGiveUpDialog = false
+        target = (1..50).random() // Novo número aleatório
+    }
 
     val imageResource = when {
         hasGivenUp -> R.drawable.image5
@@ -68,8 +76,6 @@ fun CounterGame() {
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-
         Image(
             painter = painterResource(id = imageResource),
             contentDescription = "Image progression",
@@ -85,10 +91,7 @@ fun CounterGame() {
                 text = { Text(text = "Você atingiu a meta de $target cliques!") },
                 confirmButton = {
                     Button(onClick = {
-                        count = 0
-                        hasGivenUp = false
-                        gameEnded = false
-                        showCongratulations = false
+                        resetGame()
                     }) {
                         Text("Novo Jogo")
                     }
@@ -103,10 +106,7 @@ fun CounterGame() {
                 text = { Text(text = "Deseja iniciar um novo jogo?") },
                 confirmButton = {
                     Button(onClick = {
-                        count = 0
-                        hasGivenUp = false
-                        gameEnded = false
-                        showGiveUpDialog = false
+                        resetGame()
                     }) {
                         Text("Sim")
                     }
@@ -118,7 +118,6 @@ fun CounterGame() {
                 }
             )
         }
-
 
         if (!gameEnded) {
             Button(
@@ -142,14 +141,12 @@ fun CounterGame() {
             }
         }
 
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-
             if (!gameEnded) {
                 Button(
                     onClick = {
@@ -164,13 +161,10 @@ fun CounterGame() {
                 }
             }
 
-
             if (gameEnded) {
                 Button(
                     onClick = {
-                        count = 0
-                        hasGivenUp = false
-                        gameEnded = false
+                        resetGame()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
                     shape = RoundedCornerShape(8.dp)
